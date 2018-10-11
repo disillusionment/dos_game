@@ -120,7 +120,7 @@ void SetMode(char far vidmode)
 void Display_One_Tile(int X_Location, int Y_Location, int TileNumber) {
   for (Ybit = 0;Ybit!=16;Ybit++) {
     for (Xbit = 0;Xbit!=16;Xbit++) {
-      PlotPixel(X_Location+Xbit,Y_Location+Ybit,(Tiles[TileNumber].bitmap[Xbit][Ybit]));
+      PlotPixel(X_Location+Xbit,Y_Location+Ybit,(Tiles[TileNumber/4].bitmap[Xbit][Ybit]));
     }
   }
 };
@@ -149,7 +149,8 @@ void DrawMap(void)
   int Tile_X_Position = 0,Tile_Y_Position = 0;
   int Plot_X,Plot_Y;
   gotoxy(30,20);
-  printf("%i,%i:",Xpos,Ypos);
+  printf("%i,%i:\n",Xpos,Ypos);
+  printf("%03d",mapdata[Xpos + Ypos * 64]/4);
   for (y = (Ypos - 4); y<(Ypos + 5); y++)
   {
     Tile_Y_Position++;
@@ -212,11 +213,11 @@ MoveCheck (int WhatThere)
  int ReturnValue;
  switch(WhatThere)
  {
-   case 12:
-   case 2:
-   case 1:
-      ReturnValue = MoveNotOk;
-      break;
+   //case 12:
+   //case 2:
+   //case 1:
+   //   ReturnValue = MoveNotOk;
+   //   break;
    default:
       ReturnValue = MoveOk;
       break;
@@ -344,6 +345,8 @@ void ResetLocation(int StartXpos,int StartYpos,int StartEnemyXpos,int StartEnemy
  Ypos = StartYpos;
  EnemyXpos = StartEnemyXpos;
  EnemyYpos = StartEnemyYpos;
+ DrawMap();
+
 };
 
 void initialize(void) {
@@ -352,7 +355,7 @@ void initialize(void) {
  if(ReadNBTile(0,"chartile.64b") != 0) ExitFunc();
  if(ReadNBTile(1,"enmytile.64b") != 0) ExitFunc();
  SetMode(0x13);
- DrawMap();
+// DrawMap();
 };
 
 void Intro(void) {
@@ -363,7 +366,7 @@ void GamePlay(void)
  int MoveStat = 0;
  int MoveOn = 1;
  Check = 0;
- DrawMap();
+// DrawMap();
  while(Check == 0)
    {
      MoveControl();
@@ -384,7 +387,7 @@ void main(void)
   initialize();
   Intro();
   do {
-   ResetLocation(1,14,34,27);
+   ResetLocation(49,35,34,27);
    GamePlay();
    Continue = DiedPrompt();
   }
