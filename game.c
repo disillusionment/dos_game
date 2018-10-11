@@ -1,48 +1,17 @@
-/*
-Version 0.31 - 2018
- Added checks for files before loading files.
- Check for player and non-player moving tiles before drawing map
- 
-Version 0.30 - Presumably sometime in the 90s
- Changes unknown
-
-Version 0.29
- Changed Tiles from Ascii to Binary, Increased size of tile array to 64.
- Up to 256 colors now available.
-
-Version 0.28
- Added a fix so the chaser doesn't dissapear when player crosses edge.
-
-Version 0.27
- Added fclose(*filestream) to file read in section.
- Fixed N/S wrap error
- Found and fixed E/W wrap error having to do with fact world is 0-59 and
- Yend and Xend = 60.  I should fix this because it increases the amount
- of math program must do, but right now I don't know where to start.
-
-Version 0.25
- Added World Wrap.
- Still need to fix bug in N/S world wrap.
- Chaser cannot cross wrapped area.
-
-Version 0.20
- Added Chaser.
-
-*/
 #include   <stdlib.h>
 #include    <conio.h>
 #include    <stdio.h>
 
 #define ESC    0x1b
-#define Xend     60
-#define Yend     60
 #define MoveOk    1
 #define MoveNotOk 0
-
+#define mapsize   0x1000
+#define Xend      0x40
+#define Yend      0x40
 unsigned char far *video_buffer = (char far *)0xA0000000L;
 
 char KeyBoardIn;
-int MAP[Xend][Yend];
+int mapdata[mapsize];
 
 int Xpos = 0, Ypos = 0, x, y, TileNumberToDisplay;
 int EnemyXpos = 34, EnemyYpos = 27;
@@ -50,7 +19,7 @@ int BP_X, BP_Y, TileNum, null, Ch_X, Ch_Y;
 int Xbit, Ybit;
 int Check = 0, Continue = 1;
 
-char *name = "";
+char *name = "Don Joe";
 
 typedef struct Tile
   {
@@ -69,21 +38,19 @@ struct Mobile Chasers[1];
 
 // Read In Section
 int ReadMap(void) {
+  int index;
   FILE *map;
   printf("Reading in mapfile.\n");
 
-  if((map = fopen("mapfile.ecb" , "r")) == NULL) {
+  if((map = fopen("sosaria.ult" , "r")) == NULL) {
     printf("Failed to open map file.\n");
     return(1);
   }
 
-  for (y = 0; y < Yend; y++)
+  for (index = 0; index < mapsize; index++)
   {
-    for (x = 0; x < Xend; x++)
-    {
-      MAP[x][y] = getc(map);
-    };
-  };
+     mapdata[index] = getc(map);
+  }
   fclose(map);
   return(0);
 };
@@ -190,11 +157,11 @@ void DrawMap(void)
     for (x = (Xpos - 4); x<(Xpos + 5); x++)
     {
       if (x < 0) Plot_X = Xend + x;
-      else if (x > 59) Plot_X = x - Xend;
+      else if (x > 63) Plot_X = x - Xend;
       else Plot_X = x;
 
       if (y < 0) Plot_Y = Yend + y;
-      else if (y > 59) Plot_Y = y - Yend;
+      else if (y > 63) Plot_Y = y - Yend;
       else Plot_Y = y;
 
       Tile_X_Position++;
@@ -204,8 +171,8 @@ void DrawMap(void)
       } else if (Plot_X == EnemyXpos && Plot_Y == EnemyYpos) {
 	 Display_Non_Background_Tile(Tile_X_Position*16,Tile_Y_Position*16,1);
       } else {
-	Display_One_Tile(Tile_X_Position*16,Tile_Y_Position*16,MAP[Plot_X%60][Plot_Y%60]);
-//      printf("%d",MAP[Plot_X%60][Plot_Y%60]);
+	Display_One_Tile(Tile_X_Position*16,Tile_Y_Position*16,mapdata[Plot_X%64 + Plot_Y%64 * 64]);
+//      printf("%d",mapdata[Plot_X%64 + Plot_Y%64 * 64]);
      } ;
 
     };
@@ -265,17 +232,17 @@ void MoveControl(void)
     char YM;
     char YP;
 
-    if (Xpos == Xend - 1) XP = MAP[0][Ypos];
-    else XP = MAP[Xpos + 1][Ypos];
+    if (Xpos == Xend - 1) XP = mapdata[0 +Ypos * 64];
+    else XP = mapdata[(Xpos + 1) + Ypos * 64];
 
-    if (Xpos == 0) XM = MAP[Xend - 1][Ypos];
-    else XM = MAP[Xpos - 1][Ypos];
+    if (Xpos == 0) XM = mapdata[(Xend - 1) + Ypos * 64];
+    else XM = mapdata[(Xpos - 1) + Ypos * 64];
 
-    if (Ypos == Yend - 1) YP = MAP[Xpos][0];
-    else YP = MAP[Xpos][Ypos + 1];
+    if (Ypos == Yend - 1) YP = mapdata[Xpos + 0];
+    else YP = mapdata[Xpos + (Ypos + 1) * 64];
 
-    if (Ypos == 0) YM = MAP[Xpos][Yend - 1];
-    else YM = MAP[Xpos][Ypos - 1];
+    if (Ypos == 0) YM = mapdata[Xpos + (Yend - 1) * 64];
+    else YM = mapdata[Xpos + (Ypos - 1) * 64];
 
     KeyBoardIn=getch();
     switch (KeyBoardIn)
@@ -337,17 +304,17 @@ void Chase(void)
     char EXM;
     char EXP;
 
-    if (EnemyXpos == 0) EXM = MAP[Xend - 1][EnemyYpos];
-    else EXM = MAP[EnemyXpos - 1][EnemyYpos];
+    if (EnemyXpos == 0) EXM = mapdata[(Xend - 1) + EnemyYpos * 64];
+    else EXM = mapdata[(EnemyXpos - 1) + EnemyYpos * 64];
 
-    if (EnemyXpos == Xend - 1) EXP = MAP[0][EnemyYpos];
-    else EXP = MAP[EnemyXpos + 1][EnemyYpos];
+    if (EnemyXpos == Xend - 1) EXP = mapdata[0 + EnemyYpos * 64];
+    else EXP = mapdata[(EnemyXpos + 1) + EnemyYpos * 64];
 
-    if (EnemyYpos == 0) EYM = MAP[EnemyXpos][Yend - 1];
-    else EYM = MAP[EnemyXpos][EnemyYpos - 1];
+    if (EnemyYpos == 0) EYM = mapdata[EnemyXpos + (Yend - 1) * 64];
+    else EYM = mapdata[EnemyXpos + (EnemyYpos - 1) * 64];
 
-    if (EnemyYpos == Yend - 1) EYP = MAP[EnemyXpos][0];
-    else EYP = MAP[EnemyXpos][EnemyYpos + 1];
+    if (EnemyYpos == Yend - 1) EYP = mapdata[EnemyXpos + 0];
+    else EYP = mapdata[EnemyXpos + (EnemyYpos + 1) * 64];
 
     if (EnemyXpos>Xpos && MoveCheck(EXM) == MoveOk) EnemyXpos--;
     else if (EnemyXpos<Xpos && MoveCheck(EXP) == MoveOk) EnemyXpos++;

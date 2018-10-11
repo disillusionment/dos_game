@@ -1,80 +1,65 @@
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
-#define Xend     59
-#define Yend     59
+#define mapsize  0x1000
 #define ESC      27
 
 int YDS = 0,YDE = 16;
 int CPX = 1,CPY = 1;
-int MAP[Xend][Yend];
+int mapdata[mapsize];
 int TXTCOLOR;
 int x,y;
 FILE *map;
 
-void GetMapName(char *MapName)
-{
- printf("\nPlease enter the name of the map you would like to edit : ");
- scanf("%s",MapName);
- printf("%s\n",MapName);
+void GetMapName(char *MapName) {
+   printf("\nPlease enter the name of the map you would like to edit : ");
+   scanf("%s",MapName);
+   printf("\n%s",MapName);
 }
 
+// create an empty map if one doesn't exist
 void MapCreate(void) {
- int Ix,Iy;
- for (Iy = 0; Iy < Yend; Iy++)
-  {
-    for (Ix = 0; Ix < Xend; Ix++)
-    {
-      MAP[Ix][Iy] = 0;
-    };
-  };
-};
+   int index;
+   for (index = 0; index < mapsize; index++) {
+      mapdata[index] = 0;
+   }
+}
 
 void ReadMap(char *MapName) {
-  int nul;
-  printf("Reading in mapfile. %s \n",MapName);
-  if((map = fopen(MapName, "r")) == NULL) MapCreate();
-  else {
-  for (y = 0; y < Yend; y++)
-  {
-    for (x = 0; x < Xend; x++)
-    {
-      MAP[x][y] = getc(map);
-    };
-  nul = getc(map);
-  };
-  };
+   int nul,index;
+   printf("Reading in mapfile. %s \n",MapName);
+   if((map = fopen(MapName, "r")) == NULL) {
+      printf("No map found.\n");
+      MapCreate();
+  } else {
+     for (index = 0; index < mapsize; index++) {
+        mapdata[index] = getc(map);
+     }
+  }
   fclose(map);
-};
+}
 //END MAP READ
+
 void SaveMap(char *MapName) {
-  printf("Saving mapfile.\n");
-  map = fopen(MapName, "w");
-  for (y = 0; y < Yend; y++)
-  {
-    for (x = 0; x < Xend; x++)
-    {
-     fputc(MAP[x][y],map);
-    };
-  };
+   int index;
+   printf("Saving mapfile.\n");
+   map = fopen(MapName, "w");
+   for (index = 0; index < mapsize; index++) {
+      fputc(mapdata[index],map);
+    }
   fclose(map);
-};
-
-
-
-
-
+}
 
 void DisplayMap(int Y_Disp_Start,int Y_Disp_End) {
-char PutIt;
-gotoxy(1,1);
+   char PutIt;
+   gotoxy(1,1);
 
 //printf("\n");
 //clrscr();
 
 for (y = Y_Disp_Start; y < Y_Disp_End; y++)
   {
-    for (x = 0; x < Xend; x++)
+    for (x = 0; x < 64; x++)
     {
 /*    switch(MAP[x][y]%16)
       {
@@ -114,19 +99,20 @@ for (y = Y_Disp_Start; y < Y_Disp_End; y++)
 
     };
 */
-  TXTCOLOR = MAP[x][y]%16;
-  PutIt = '�';
+  TXTCOLOR = mapdata[x + y * 64]%16;
+  PutIt = 219;
     if(x == CPX & y == CPY) TXTCOLOR = BLINK+TXTCOLOR;
     textcolor(TXTCOLOR);
-    putch(PutIt);
-    };
+       putch(PutIt);
+    }
     printf("\n");
-  };
-};
+  }
+}
 
 void ChangeMap(void) {
- scanf("%d",&MAP[CPX][CPY]);
- };
+   scanf("%d",&mapdata[CPX + CPY * 64]);
+}
+
 void ReadKeyboard(char *MapName) {
 
   char KeyBoardIn=getch();
@@ -138,7 +124,7 @@ void ReadKeyboard(char *MapName) {
       break;
 
      case '+':
-	 if (YDS + 24 < Yend) YDS++;
+	 if (YDS + 24 < 64) YDS++;
 	 else YDS = YDS;
       break;
 
@@ -148,12 +134,12 @@ void ReadKeyboard(char *MapName) {
       break;
 
      case '6':
-	 if(CPX + 1 < Xend) CPX++;
+	 if(CPX + 1 < 64) CPX++;
 	 else CPX = CPX;
       break;
 
      case '2':
-	 if(CPY + 1 < Yend) CPY++;
+	 if(CPY + 1 < 64) CPY++;
 	 else CPY = CPY;
       break;
 
@@ -186,6 +172,6 @@ while(1) {
     ReadKeyboard(&MapName);
     DisplayMap(YDS,YDS+16);
     gotoxy(65,10);
-    printf("%d",MAP[CPX][CPY]);
+    printf("%d",mapdata[CPX + CPY * 64]);
     }
 }
