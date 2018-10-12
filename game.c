@@ -2,7 +2,7 @@
 #include    <conio.h>
 #include    <stdio.h>
 
-#define ESC    0x1b
+#define ESC       0x1b
 #define MoveOk    1
 #define MoveNotOk 0
 #define mapsize   0x1000
@@ -151,33 +151,35 @@ void DrawMap(void)
   gotoxy(30,20);
   printf("%i,%i:\n",Xpos,Ypos);
   printf("%03d",mapdata[Xpos + Ypos * 64]/4);
-  for (y = (Ypos - 4); y<(Ypos + 5); y++)
-  {
-    Tile_Y_Position++;
-    Tile_X_Position = 0;
-    for (x = (Xpos - 4); x<(Xpos + 5); x++)
-    {
-      if (x < 0) Plot_X = Xend + x;
-      else if (x > 63) Plot_X = x - Xend;
-      else Plot_X = x;
 
-      if (y < 0) Plot_Y = Yend + y;
-      else if (y > 63) Plot_Y = y - Yend;
-      else Plot_Y = y;
+  for (y = (Ypos - 5); y<(Ypos + 6); y++) {
+     Tile_Y_Position++;
+     Tile_X_Position = 0;
+     for (x = (Xpos - 5); x<(Xpos + 6); x++) {
+        // Map edge handling
+        if (x < 0) Plot_X = Xend + x;
+        else if (x > 63) Plot_X = x - Xend;
+        else Plot_X = x;
 
-      Tile_X_Position++;
+        if (y < 0) Plot_Y = Yend + y;
+        else if (y > 63) Plot_Y = y - Yend;
+        else Plot_Y = y;
 
-      if (Tile_Y_Position == 5 && Tile_X_Position == 5) {
-	 Display_Non_Background_Tile(Tile_X_Position*16,Tile_Y_Position*16,0);
-      } else if (Plot_X == EnemyXpos && Plot_Y == EnemyYpos) {
-	 Display_Non_Background_Tile(Tile_X_Position*16,Tile_Y_Position*16,1);
-      } else {
-	Display_One_Tile(Tile_X_Position*16,Tile_Y_Position*16,mapdata[Plot_X%64 + Plot_Y%64 * 64]);
+        Tile_X_Position++;
+
+        if (Tile_Y_Position == 6 && Tile_X_Position == 6) {
+           //Display Player tile
+	   Display_Non_Background_Tile(Tile_X_Position*16-8,Tile_Y_Position*16-8,0);
+	} else if (Plot_X == EnemyXpos && Plot_Y == EnemyYpos) {
+	   //Display Enemy tile
+	   Display_Non_Background_Tile(Tile_X_Position*16-8,Tile_Y_Position*16-8,1);
+	} else {
+		 Display_One_Tile(Tile_X_Position*16-8,Tile_Y_Position*16-8,mapdata[Plot_X%64 + Plot_Y%64 * 64]);
 //      printf("%d",mapdata[Plot_X%64 + Plot_Y%64 * 64]);
-     } ;
+        }
 
-    };
-  };
+    }
+  }
 }
 //
 //
