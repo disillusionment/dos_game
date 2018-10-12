@@ -18,7 +18,9 @@ typedef struct Tile
 };
 
 // This makes more sense than 64 or 128 though I'm starting with just 4 elements
-struct Tile Tiles[256];
+// Going to use top two bits for element rotation so reducing number of tiles in
+// file to 64
+struct Tile Tiles[64];
 
 FILE *tiles;
 
@@ -28,7 +30,7 @@ void ReadTiles(void) {
   int TileNum;
   printf("Reading in tilefile.\n");
   tiles = fopen("shapes.bin", "r");
-  for (TileNum = 0; TileNum < 256; TileNum++)
+  for (TileNum = 0; TileNum < 64; TileNum++)
   {
   for (y = 0; y < 8; y++)
   {
