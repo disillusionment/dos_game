@@ -1,3 +1,5 @@
+
+/* Binary map editor */ 
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -65,27 +67,27 @@ for (y = Y_Disp_Start; y < Y_Disp_End; y++)
       {
     case 0:
      TXTCOLOR = GREEN;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 1:
      TXTCOLOR = BLUE;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 2:
      TXTCOLOR = RED;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 3:
      TXTCOLOR = BROWN;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 4:
      TXTCOLOR = DARKGRAY;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 5:
      TXTCOLOR = MAGENTA;
-     PutIt = '�';
+     PutIt = '▓';
     break;
     case 7:
      TXTCOLOR = GREEN;
